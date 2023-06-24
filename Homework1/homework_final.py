@@ -21,13 +21,14 @@
 #
 
 
+
 class Node:
 
     def __init__(self, value):
         self.value = value
         self.left_descendant = None
         self.right_descendant = None
-        self.color = False  # если false то чёрный иначе красный
+        self.color = True  # если false то чёрный иначе красный
 
 
 class BlackRedTree:
@@ -40,39 +41,51 @@ class BlackRedTree:
         return self.N
 
     def is_red(self, node):  # функция получения цвета узла
-        return str(node.color).lower() == 'red' if node else False
+        if node:
+            return node.color == True
+        else:
+            return False
 
     def left_turn(self, node):
 
         """метод левостороннего поворота """
 
+        print("поворот на лево")
         new_node = node.right_descendant  # создаём указатель на новый узел
-        node.right_descendant = new_node.left_descendant  # передаём значение  правому потомку родителя
+        node.right_descendant = new_node.left_descendant
+        new_node.left_descendant = node  # передаём значение  левому потомку родителя
         # значение  левого потомка  нынешнего правого потомка родителя
-        new_node.left_descendant = node  # передаём левому потомку нового корня значение родителя
+        # передаём левому потомку нового корня значение родителя
         new_node.color = node.color
-        node.color = 'red'
+        node.color = True
+        print(f"новое значение корня полсле поворота {new_node.color, new_node.value}")
         return new_node  # возвращаем узел
 
     def right_turn(self, node):
 
         """метод правостороннего поворота с обработкой случая пустой ноды для двух красных нод"""
 
-        new_node = node.right_descendant  # создаём указатель на новый узел
+        print('поворот на право')
+
+        new_node = node.left_descendant  # создаём указатель на новый узел
         node.left_descendant = new_node.right_descendant  # передаём значение  левому потомку родителя
         # значение  правого потомка  нынешнего левого потомка родителя
         new_node.right_descendant = node  # передаём правому потомку нового корня значение старго корня
         new_node.color = node.color
         node.color = True
+        print(f"новое значение корня после поворота {new_node.color, new_node.value}")
         return new_node  # возвращаем узел
 
     def swap_color(self, node):
 
         """Метод смены цвета"""
 
-        node.color = 'Red'  # меняем цвет родителя
-        node.right_descendant.color = 'Black'  # меняем цвет правого потомка на черный
-        node.left_descendant.color = 'Black'  # меняем цвет левого  потомка на черный
+        print("смена цвета")
+
+        node.color = True  # меняем цвет родителя
+        node.right_descendant.color = False  # меняем цвет правого потомка на черный
+        node.left_descendant.color = False  # меняем цвет левого  потомка на черный
+        print(f"цвета потомков {node.left_descendant.color, node.right_descendant.color}")
 
     def insert_node(self, value):
         """метод Создания узла"""
@@ -88,23 +101,28 @@ class BlackRedTree:
                 node.right_descendant = __inserts_node(node.right_descendant, value)
             else:  # Назначаем значение узла
                 node.value = value
-                node.color = True
+                node.color = 'Red'
                 return node
 
-            if self.is_red(node.right_descendant) and not self.is_red(node.left_descendant):
+            # Когда правый дочерний элемент красный а левый либо черный либо его не существует
+            if self.is_red(node.right_descendant) and not self.is_red(node.left_descendant) \
+                    or node.left_descendant is None:
                 # Rotate left
                 self.left_turn(node)
 
+            # Когда левый ребенок и левый внук красные
             if self.is_red(node.left_descendant) and self.is_red(node.left_descendant.left_descendant):
                 # Rotate right
                 self.right_turn(node)
 
+            # Смена цвета когда правый и левый потомок красные
             if self.is_red(node.left_descendant) and self.is_red(node.right_descendant):
                 # Swap
                 self.swap_color(node)
 
             self.N += 1
             return node
+
         self.root = __inserts_node(self.root, value)
         self.root.color = 'Black'
         return self.root
@@ -125,13 +143,38 @@ class BlackRedTree:
         else:
             return self.__nodes_find(root.right_descendant,
                                      value)  # если больше то запускаем рекурсию от правого потомка
+    def printing(self):
+        root = self.root
+        print(root.color, root.value)
+        print(root.left_descendant.value.color)
 
 
 # Проверка
 
 t = BlackRedTree()  # создаём экземпляр класса
-t.insert_node(5)  # добовляем узлы в кчд
-t.insert_node(2)
 
-print(t.size())  # размер дерева
-print(t.root.value, t.root.color)  # цвет корня
+# осуществляется поворот дерева на лево как и должно
+# for i in range(21):
+#     t.insert_node(i)
+#     print(t.size())
+
+# Смена цвета
+# t.insert_node(5)
+# t.insert_node(4)
+# t.insert_node(6)
+
+#Поворот на право
+# t.insert_node(7)
+# t.insert_node(5)
+# t.insert_node(4)
+
+# flag = True
+# while flag:
+#     t.insert_node(input("Введите значение для добавления в дерево: "))
+#     answer = input("если хотите продолжить нажмите y или q для выхода: ").lower()
+#     if answer != 'y' and not 'q':
+#         answer = input("Вы ввели не верное значение y или q для выхода: ")
+#     if answer == 'q'.lower():
+#             flag = False
+#
+# print('\n\t\tGood Bay'.upper())
